@@ -8,7 +8,9 @@
 
 
 <div class="section" id="vue-target" v-cloak>
-  <!-- Put here your Vue.js template -->
+  <input class="input" type="text" v-model="userinput">
+  <button class="button is-danger" @click="letsgo">Go!</button>
+  <button class="button is-success" @click="letsgo_safe">Safe Go!</button>
 </div>
 
 

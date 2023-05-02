@@ -10,6 +10,7 @@ let init = (app) => {
     // This is the Vue data.
     app.data = {
         // Complete as you see fit.
+        userinput: "",
     };
 
     app.enumerate = (a) => {
@@ -19,10 +20,36 @@ let init = (app) => {
         return a;
     };
 
+    app.letsgo = function () {
+        let v = app.vue.userinput;
+        axios.post(my_callback_url, {userinput: v}).then(
+            function(response) {
+                console.log(response.data.result);
+                console.log(v);
+            }
+        )
+        v += " hello";
+
+    };
+
+    app.letsgo_safe = function () {
+        let v = app.vue.userinput;
+        (function (vv) {
+            axios.post(my_callback_url, {userinput: vv}).then(
+                function (response) {
+                    console.log(response.data.result);
+                    console.log(vv);
+                }
+            )
+        })(v);
+        v += " hello";
+    };
 
     // This contains all the methods.
     app.methods = {
         // Complete as you see fit.
+        letsgo: app.letsgo,
+        letsgo_safe: app.letsgo_safe,
     };
 
     // This creates the Vue instance.

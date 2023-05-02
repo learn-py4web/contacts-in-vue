@@ -40,3 +40,8 @@ def index():
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
     )
+
+@action('my_callback', method="POST")
+@action.uses(session, url_signer.verify())
+def my_callback():
+    return dict(result=42)
