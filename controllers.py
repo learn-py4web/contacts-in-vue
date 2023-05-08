@@ -34,14 +34,36 @@ from .models import get_user_email
 url_signer = URLSigner(session)
 
 @action('index')
-@action.uses('index.html', db, auth, url_signer)
+@action.uses('index.html', db, auth.user, url_signer)
 def index():
     return dict(
         # COMPLETE: return here any signed URLs you need.
-        my_callback_url = URL('my_callback', signer=url_signer),
+        get_contacts_url = URL('get_contacts', signer=url_signer),
+        create_contact_url = URL('create_contact', signer=url_signer),
     )
 
-@action('my_callback', method="POST")
-@action.uses(session, url_signer.verify())
-def my_callback():
-    return dict(result=42)
+@action('get_contacts', method="GET")
+@action.uses(session, auth.user, url_signer.verify())
+def get_contacts():
+    contacts = db(db.contact.owner == get_user_email()).select().as_list()
+    # contacts = [dict(id=1, contact_name="Luca de Alfaro", contact_owner="luca@ucsc.edu")]
+    return dict(contacts=contacts)
+
+@action('create_contact', method="POST")
+@action.uses(auth.user, url_signer.verify(), db)
+def create_contact():
+    id = db.contact.insert(contact_name = request.params.contact_name)
+    return dict(contact=dict(
+        id=id,
+        contact_name=request.params.contact_name,
+        contact_owner=get_user_email(),
+    ))
+
+@action('create_phone', method="POST")
+@action.uses(auth.user, url_signer.verify(), db)
+def create_phone():
+    id = db.phone_info.insert(
+        contact_id = request.params.contact_id,
+        phone_name = request.params.phone_name,
+        phone_number = request.params.phone_number,
+    )

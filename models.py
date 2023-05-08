@@ -13,11 +13,15 @@ def get_user_email():
 def get_time():
     return datetime.datetime.utcnow()
 
+db.define_table('contact',
+                Field('contact_name'),
+                Field('owner', default=get_user_email)
+                )
 
-### Define your table below
-#
-# db.define_table('thing', Field('name'))
-#
-## always commit your models to avoid problems later
+db.define_table('phone_info',
+                Field('phone_number'),
+                Field('phone_type'),
+                Field('contact_id', 'reference contact')
+                )
 
 db.commit()
