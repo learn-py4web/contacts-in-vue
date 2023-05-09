@@ -31,8 +31,10 @@
           <button @click="create_phone(c._idx)" class="button is-success">Add Phone</button>
         </td>
       </tr>
-      <tr>
-        <td>(650) 123-4567</td><td>Mobile</td>
+      <tr v-for="p in c.phones">
+        <td>{{p.phone_number}}</td>
+        <td>{{p.phone_type}}</td>
+        <td><button class="button is-danger" @click="delete_phone(c._idx,p._idx)"><i class="fa fa-trash-o"></i></button></td>
       </tr>
     </table>
   </div>
@@ -44,6 +46,8 @@
 <script>
   let get_contacts_url = "[[=XML(get_contacts_url)]]";
   let create_contact_url = "[[=XML(create_contact_url)]]";
+  let create_phone_url = "[[=XML(create_phone_url)]]";
+  let delete_phone_url = "[[=XML(delete_phone_url)]]";
 </script>
 <script src="js/index.js"></script>
 [[end]]

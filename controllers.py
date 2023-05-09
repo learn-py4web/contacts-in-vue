@@ -25,7 +25,7 @@ session, db, T, auth, and tempates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
 
-from py4web import action, request, abort, redirect, URL
+from py4web import action, request, abort, redirect, URL, HTTP
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
@@ -40,6 +40,8 @@ def index():
         # COMPLETE: return here any signed URLs you need.
         get_contacts_url = URL('get_contacts', signer=url_signer),
         create_contact_url = URL('create_contact', signer=url_signer),
+        create_phone_url = URL('create_phone'),
+        delete_phone_url=URL('delete_phone'),
     )
 
 @action('get_contacts', method="GET")
@@ -47,6 +49,9 @@ def index():
 def get_contacts():
     contacts = db(db.contact.owner == get_user_email()).select().as_list()
     # contacts = [dict(id=1, contact_name="Luca de Alfaro", contact_owner="luca@ucsc.edu")]
+    # Adorns each contact with their phones.
+    for c in contacts:
+        c["phones"] = db(db.phone_info.contact_id == c["id"]).select().as_list()
     return dict(contacts=contacts)
 
 @action('create_contact', method="POST")
@@ -60,10 +65,25 @@ def create_contact():
     ))
 
 @action('create_phone', method="POST")
-@action.uses(auth.user, url_signer.verify(), db)
+@action.uses(auth.user, db)
 def create_phone():
     id = db.phone_info.insert(
         contact_id = request.params.contact_id,
-        phone_name = request.params.phone_name,
+        phone_type = request.params.phone_name,
         phone_number = request.params.phone_number,
     )
+    return dict(phone_id=id,
+                phone_number = request.params.phone_number,
+                phone_type = request.params.phone_name)
+
+@action('delete_phone', method="POST")
+@action.uses(auth.user, db)
+def delete_phone():
+    contact_id = request.params.contact_id
+    phone_id = request.params.phone_id
+    # Checks contact ownership.
+    c = db(db.contact.id == contact_id).select().first()
+    if c.owner != get_user_email():
+        raise HTTP(403)
+    db(db.phone_info.id == phone_id).delete()
+    return dict(result="ok")
